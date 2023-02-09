@@ -1,0 +1,21 @@
+---
+title: "labb"
+author: "Max Settineri"
+date: "2023-02-09"
+output: html_document
+---
+
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(here)
+library(tidyverse)
+library(ggfortify)
+library(patchwork)
+library(readxl)
+library(gghighlight)
+library(lubridate)
+library(plotly)
+```
+
+
