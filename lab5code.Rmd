@@ -18,4 +18,43 @@ library(lubridate)
 library(plotly)
 ```
 
+# Part 1: principle component analysis (PCA)
+
+```{r}
+hdi_data <- read_csv(here('data', 'hdi_clean.csv')) %>% 
+  drop_na() %>% 
+  mutate(hdicode = factor(hdicode, levels = c('Low', 'Medium', 'High', 'Very High')))
+
+hdi_pca <- hdi_data %>% 
+  dplyr::select(where(is.numeric)) %>% # selects only columns with numeric variables
+  scale() %>% # takes all numeric variables and shrinks column to make standard deviation for each one
+  prcomp() 
+```
+
+```{r}
+loadings_df <- data.frame(hdi_pca$rotation * 8) %>% # can multiply by 8 or other # to change arrow length
+  mutate(axis = row.names(.))
+
+new_pts_df <- data.frame(hdi_pca$x) 
+
+ggplot() +
+  geom_point(data = new_pts_df, aes(x = PC1, y = PC2), color = 'blue') +
+  geom_segment(data = loadings_df, x = 0, y = 0,
+               aes(xend = PC1, yend = PC2, group = axis),
+               arrow = arrow(length = unit(.25, 'cm'))) +
+  geom_text(data = loadings_df,
+            aes(x = PC1, y = PC2, label = axis)) +
+  theme_minimal()
+```
+
+```{r}
+autoplot(hdi_pca,
+     	data = hdi_data,
+     	loadings = TRUE,
+     	colour = 'hdicode',
+     	loadings.label = TRUE,
+     	loadings.colour = "black",
+     	loadings.label.colour = "black",
+     	loadings.label.vjust = -0.5)
+```
 
