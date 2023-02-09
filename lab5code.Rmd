@@ -55,6 +55,34 @@ autoplot(hdi_pca,
      	loadings.label = TRUE,
      	loadings.colour = "black",
      	loadings.label.colour = "black",
-     	loadings.label.vjust = -0.5)
+     	loadings.label.vjust = -0.5) +
+  scale_color_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
+  theme_minimal()
+```
+
+## Screeplot by hand
+
+```{r}
+sd_vec <- hdi_pca$sdev
+var_vec <- sd_vec^2
+pc_names <- colnames(hdi_pca$rotation)
+
+pct_expl_df <- data.frame(v = var_vec,
+                          pct_v = var_vec / sum(var_vec),
+                          pc = fct_inorder(pc_names)) %>% 
+  mutate(pct_lbl = paste0(round(pct_v * 100, 1), '%'))
+
+ggplot(pct_expl_df, aes(x = pc, y = v)) +
+  geom_col() +
+  geom_text(aes(label = pct_lbl), vjust = 0, nudge_y = .002) +
+  labs(x = 'Principal component', y = 'Variance explained')
+
+```
+
+```{r}
+# built in scree plots in base r, good for quick vis, not so ood for customization
+screeplot(hdi_pca, type = 'lines')
+screeplot(hdi_pca, type = 'barplot')
+
 ```
 
