@@ -1,0 +1,75 @@
+---
+title: "ggplot customization"
+author: "Max Settineri"
+date: "2023-02-09"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(gghighlight)
+library(lubridate)
+library(readxl)
+library(plotly)
+
+```
+
+### read in excel file, wrangle data
+
+```{r}
+fish_noaa <- readxl::read_excel(here('data', 'foss_landings.xlsx')) %>% 
+  janitor::clean_names() %>% 
+  mutate(across(where(is.character), tolower)) %>% # will look across all columns and identify where character type data is and apply tolower function to those, makes lowercase 
+  mutate(nmfs_name = str_sub(nmfs_name, end = -4)) %>% 
+  filter(confidentiality == 'public')
+```
+
+```{r}
+fish_plot <- ggplot(data = fish_noaa,
+                    aes(x = year, y = pounds, group = nmfs_name)) +
+  geom_line(aes(color = nmfs_name)) + 
+  theme_minimal()
+
+# making it interactive
+ggplotly(fish_plot)
+
+# highlight series based on condition(s)
+ggplot(data = fish_noaa,
+      aes(x = year, y = pounds, group = nmfs_name)) +
+  geom_line() +
+  gghighlight(nmfs_name == 'rockfishes') + # highlight specific group
+  theme_minimal()
+
+ggplot(data = fish_noaa,
+      aes(x = year, y = pounds, group = nmfs_name)) +
+  geom_line(aes(color = nmfs_name)) +
+  gghighlight(max(pounds) > 1e8) + # highlight groups that match this criteria
+  theme_minimal()
+```
+
+## read data from web
+
+```{r}
+monroe_wt <- read_csv('https://raw.githubusercontent.com/maxsettineri/esm244_w2023_lab5/master/data/MWTP_Elec_Daily.csv') %>% 
+  janitor::clean_names() 
+
+monroe_ts <- monroe_wt %>% 
+  mutate(date = mdy(date)) %>% 
+  mutate(record_month = month(date)) %>% 
+  mutate(month_name = month.abb[record_month]) %>% 
+  mutate(month_name = fct_reorder(month_name, record_month)) 
+
+ggplot( data = monroe_ts, aes(x = month_name, y = total_kwh)) +
+  geom_jitter(aes(color = month_name),
+              show.legend = FALSE,
+              alpha = .5,
+              size = .3,
+              width = 0.2) +
+  theme_classic()
+```
+
